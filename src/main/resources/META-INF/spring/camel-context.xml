@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configures the Camel Context-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+       http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+ 
+  <jaxws:endpoint 
+      id="tasksEndpoint"
+      implementor="com.redhat.bashburn.fuse.tasks.TasksEndpointImpl"
+      address="http://localhost:8181/cxf/taskmanager/webservices/tasks"
+    />
+  <camel:camelContext xmlns="http://camel.apache.org/schema/spring">
+    <camel:propertyPlaceholder id="properties" location="example.properties"/>
+    <camel:route>
+      <camel:from uri="jetty:http://localhost:8282/apimanager?matchOnUriPrefix=true" />
+      <camel:choice>
+        <camel:when>
+          <!-- This is the request for the WSDL -->
+          <camel:simple>${header.wsdl}</camel:simple>
+          <camel:log message="Got a WSDL request" />
+          <camel:log message="HEADERS: ${headers}" />
+          <camel:log message='URI: ${headers.CamelHttpUri.replaceAll("/apimanager", "/cxf")}' />
+          <!-- For WSDL requests to the API Manager, we pass that to our local cxf services -->
+          <camel:setHeader headerName="CamelHttpUri">
+            <camel:simple>http://localhost:8181${headers.CamelHttpUri.replaceAll("/apimanager", "/cxf")}</camel:simple>
+          </camel:setHeader>
+          <camel:to uri="http://dummyurl" />
+        </camel:when>
+        <camel:when>
+          <!-- Here we set up a location to process validating the application key -->
+          <camel:simple>${headers.CamelHttpUri} == ${properties:applicationkeyvalidationservice.path}</camel:simple>
+          <camel:log message="Got an Application Key Validation Service"/>
+          <camel:setHeader headerName="CamelHttpUri">
+            <camel:simple>http://localhost:8181${headers.CamelHttpUri.replaceAll("/apimanager", "/cxf")}</camel:simple>
+          </camel:setHeader>
+          <camel:to uri="http://dummyurl" />
+        </camel:when>
+        <camel:otherwise>
+          <!-- For all other service invokations, just pass through -->
+          <camel:log message="Got a normal service" />
+          <camel:setHeader headerName="CamelHttpUri">
+            <camel:simple>http://localhost:8181${headers.CamelHttpUri.replaceAll("/apimanager", "/cxf")}</camel:simple>
+          </camel:setHeader>
+          <camel:to uri="http://dummyurl" />
+        </camel:otherwise>
+      </camel:choice>
+    </camel:route>
+  </camel:camelContext>
+
+</beans>

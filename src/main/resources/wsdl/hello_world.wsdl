@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file
+distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to You under
+the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may
+obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to
+in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under
+the License. -->
+
+<wsdl:definitions
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:tns="http://taskmanager.bashburn.redhat.com"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  targetNamespace="http://taskmanager.bashburn.redhat.com">
+
+  <!-- Type definitions for input- and output parameters for webservice -->
+  <wsdl:types>
+    <xs:schema targetNamespace="http://taskmanager.bashburn.redhat.com">
+      <xs:element name="listTasksRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element type="xs:string" name="userId" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:complexType name="taskData">
+        <xs:sequence>
+          <xs:element type="xs:string" name="taskName"/>
+          <xs:element type="xs:string" name="taskStatus"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="listTasksResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element type="tns:taskData" name="tasks" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </wsdl:types>
+
+  <!-- Message definitions for input and output -->
+  <wsdl:message name="listTasksRequest">
+    <wsdl:part name="in" element="tns:listTasksRequest" />
+  </wsdl:message>
+  <wsdl:message name="listTasksResponse">
+    <wsdl:part name="out" element="tns:listTasksResponse" />
+  </wsdl:message>
+
+  <!-- Port (interface) definitions -->
+  <wsdl:portType name="TasksEndpoint">
+    <wsdl:operation name="ListTasks">
+      <wsdl:input message="tns:listTasksRequest" />
+      <wsdl:output message="tns:listTasksResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!-- Port bindings to transports and encoding - HTTP, document literal encoding is used -->
+  <wsdl:binding name="TasksBinding" type="tns:TasksEndpoint">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="ListTasks">
+      <soap:operation soapAction="http://taskmanager.bashburn.redhat.com/ListTasks" style="document" />
+      <wsdl:input>
+        <soap:body parts="in" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body parts="out" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <!-- Service definition -->
+  <wsdl:service name="TasksEndpointService">
+    <wsdl:port name="TasksEndpoint" binding="tns:TasksBinding">
+      <soap:address location="http://localhost:8181/cxf/taskmanager/webservices/tasks" />
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>
