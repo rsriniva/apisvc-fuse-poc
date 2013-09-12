@@ -18,9 +18,13 @@
       implementor="com.redhat.bashburn.fuse.tasks.TasksEndpointImpl"
       address="http://localhost:8181/cxf/taskmanager/webservices/tasks"
     />
-  <bean id="hostTransformer" class="com.redhat.bashburn.fuse.HostTransformer" />
+  <bean id="hostTransformer" class="com.redhat.bashburn.fuse.HostTransformer">
+    <property name="from" value="localhost:8181/cxf" />
+    <property name="to" value="localhost:8282/apimanager" />
+  </bean>
   <camel:camelContext xmlns="http://camel.apache.org/schema/spring">
     <camel:propertyPlaceholder id="properties" location="example.properties"/>
+    <!-- Common route for transforming call from apimanager to local cxf server -->
     <camel:route>
       <camel:from uri="direct:callService"/>
       <!-- For WSDL requests to the API Manager, we pass that to our local cxf services -->
@@ -29,6 +33,7 @@
       </camel:setHeader>
       <camel:to uri="http://dummyurl" />
     </camel:route>
+    <!-- Route to listen on a particular HTTP context for all messages -->
     <camel:route>
       <camel:from uri="jetty:http://localhost:8282/apimanager?matchOnUriPrefix=true" />
       <camel:choice>
@@ -38,7 +43,10 @@
           <camel:log message="Got a WSDL request" />
           <camel:log message="HEADERS: ${headers}" />
           <camel:log message='URI: ${headers.CamelHttpUri.replaceAll("/apimanager", "/cxf")}' />
+          <!-- This will call the service and get the WSDL back -->
           <camel:to uri="direct:callService" />
+          <!-- This bean will replace all the localhost:8181 to localhost:8282 so that all services seem to come from 
+               Camel -->
           <camel:bean ref="hostTransformer" method="doTransform" />
         </camel:when>
         <camel:when>
