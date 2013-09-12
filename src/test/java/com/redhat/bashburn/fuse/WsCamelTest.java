@@ -33,7 +33,6 @@ public class WsCamelTest extends CamelSpringTestSupport {
     request.setUserId("testuserid");
     ListTasksResponse response = endpoint.listTasks(request);
     assertThat(response, notNullValue());
-    org.apache.cxf.BusFactory.setDefaultBus(null);
   }
 
   @Override
