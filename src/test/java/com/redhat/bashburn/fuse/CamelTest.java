@@ -47,6 +47,7 @@ public class CamelTest extends CamelSpringTestSupport {
       String wsdlString = context.getTypeConverter().convertTo(String.class, conn.getInputStream());
       assertThat(wsdlString, notNullValue());
       assertThat(wsdlString, not(containsString("8181")));
+      assertThat(wsdlString, containsString("apimanager"));
       org.apache.cxf.BusFactory.setDefaultBus(null);
       // This is a hack to deal with the keepAlive timeout from the Jetty server
       Thread.sleep(5000);
