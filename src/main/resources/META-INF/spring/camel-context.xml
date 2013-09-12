@@ -18,6 +18,7 @@
       implementor="com.redhat.bashburn.fuse.tasks.TasksEndpointImpl"
       address="http://localhost:8181/cxf/taskmanager/webservices/tasks"
     />
+  <bean id="hostTransformer" class="com.redhat.bashburn.fuse.HostTransformer" />
   <camel:camelContext xmlns="http://camel.apache.org/schema/spring">
     <camel:propertyPlaceholder id="properties" location="example.properties"/>
     <camel:route>
@@ -34,6 +35,7 @@
             <camel:simple>http://localhost:8181${headers.CamelHttpUri.replaceAll("/apimanager", "/cxf")}</camel:simple>
           </camel:setHeader>
           <camel:to uri="http://dummyurl" />
+          <camel:bean ref="hostTransformer" method="doTransform" />
         </camel:when>
         <camel:when>
           <!-- Here we set up a location to process validating the application key -->

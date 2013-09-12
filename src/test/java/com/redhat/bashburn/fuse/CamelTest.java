@@ -1,6 +1,7 @@
 package com.redhat.bashburn.fuse;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.matchers.JUnitMatchers.*;
 
 import java.io.IOException;
 import java.io.File;
@@ -45,6 +46,7 @@ public class CamelTest extends CamelSpringTestSupport {
       assertThat(conn.getResponseCode(), is(HttpURLConnection.HTTP_OK));
       String wsdlString = context.getTypeConverter().convertTo(String.class, conn.getInputStream());
       assertThat(wsdlString, notNullValue());
+      assertThat(wsdlString, not(containsString("8181")));
       org.apache.cxf.BusFactory.setDefaultBus(null);
       // This is a hack to deal with the keepAlive timeout from the Jetty server
       Thread.sleep(5000);
