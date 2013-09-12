@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>CXF Interceptors Example Project</name>
+  <name>Web Service Proxy Example Project</name>
   <url>http://www.redhat.com</url>
 
   <properties>
